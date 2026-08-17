@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Smritilipi APK
 
 on:
   push:
@@ -54,6 +54,31 @@ jobs:
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug
+        name: Smritilipi
         path: app/build/outputs/apk/debug/*.apk
         if-no-files-found: warn
+
+    - name: Create Release
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: app/build/outputs/apk/debug/*.apk
+        tag_name: v1.0.${{ github.run_number }}
+        name: "Smritilipi v1.0.${{ github.run_number }}"
+        body: |
+          ## 📦 Smritilipi App
+          
+          ### Features
+          - বাংলা নোট অ্যাপ
+          - ২৪টি বাংলা ফন্ট সাপোর্ট
+          - PDF এক্সপোর্ট
+          - ডার্ক/লাইট থিম
+          
+          ### Installation
+          1. APK ডাউনলোড করুন
+          2. Unknown Sources অনুমতি দিন
+          3. ইন্সটল করুন
+        draft: false
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
