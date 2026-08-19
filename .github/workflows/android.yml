@@ -48,21 +48,37 @@ jobs:
           -keypass android \
           -dname "CN=Android Debug,O=Android,C=US"
 
+    - name: Decode Release Keystore
+      run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > smritilipi-release.jks
+
     - name: Build Debug APK
       run: ./gradlew assembleDebug --stacktrace
 
-    - name: Upload APK Artifact
+    - name: Build Release APK
+      run: ./gradlew assembleRelease --stacktrace
+      env:
+        STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+    - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
-        name: Smritilipi
+        name: Smritilipi-Debug
         path: app/build/outputs/apk/debug/*.apk
+        if-no-files-found: warn
+
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Smritilipi-Release
+        path: app/build/outputs/apk/release/*.apk
         if-no-files-found: warn
 
     - name: Create Release
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       uses: softprops/action-gh-release@v2
       with:
-        files: app/build/outputs/apk/debug/*.apk
+        files: app/build/outputs/apk/release/*.apk
         tag_name: v1.0.${{ github.run_number }}
         name: "Smritilipi v1.0.${{ github.run_number }}"
         body: |
@@ -79,6 +95,6 @@ jobs:
           2. Unknown Sources অনুমতি দিন
           3. ইন্সটল করুন
         draft: false
-        prerelease: true
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
