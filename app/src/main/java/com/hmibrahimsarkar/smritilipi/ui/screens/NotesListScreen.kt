@@ -1,0 +1,991 @@
+package com.hmibrahimsarkar.smritilipi.ui.screens
+
+import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.ui.draw.rotate
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.window.PopupProperties
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.ViewList
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.automirrored.outlined.Notes
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Surface
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.SortByAlpha
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.res.painterResource
+import com.hmibrahimsarkar.smritilipi.R
+import android.content.Intent
+import com.hmibrahimsarkar.smritilipi.data.local.entity.GroupEntity
+import com.hmibrahimsarkar.smritilipi.data.local.entity.NoteEntity
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.icons.outlined.ViewAgenda
+import com.hmibrahimsarkar.smritilipi.ui.components.AppTopBar
+import com.hmibrahimsarkar.smritilipi.ui.components.AssignGroupDialog
+import com.hmibrahimsarkar.smritilipi.ui.components.DeleteConfirmationDialog
+import com.hmibrahimsarkar.smritilipi.ui.components.InfoBar
+import com.hmibrahimsarkar.smritilipi.ui.components.NoteCardItem
+import com.hmibrahimsarkar.smritilipi.ui.components.NoteGridItem
+import com.hmibrahimsarkar.smritilipi.ui.components.NoteListItem
+import com.hmibrahimsarkar.smritilipi.ui.theme.AmberAccent
+import com.hmibrahimsarkar.smritilipi.ui.theme.GoldDark
+import com.hmibrahimsarkar.smritilipi.ui.theme.GoldGlow
+import com.hmibrahimsarkar.smritilipi.ui.theme.GoldLight
+import com.hmibrahimsarkar.smritilipi.ui.theme.GoldPrimary
+import com.hmibrahimsarkar.smritilipi.ui.theme.LightTextPrimary
+import com.hmibrahimsarkar.smritilipi.ui.viewmodel.MainViewModel
+import com.hmibrahimsarkar.smritilipi.util.PdfExportHelper
+
+private val SidebarIconVector: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "SidebarIcon",
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).addPath(
+        pathData = addPathNodes("M 3,4.5 C 3,3.67 3.67,3 4.5,3 L 19.5,3 C 20.33,3 21,3.67 21,4.5 L 21,19.5 C 21,20.33 20.33,21 19.5,21 L 4.5,21 C 3.67,21 3,20.33 3,19.5 Z M 5,5 L 5,19 L 9.2,19 L 9.2,5 Z M 10.8,19 L 19,19 L 19,5 L 10.8,5 Z"),
+        fill = SolidColor(Color.White)
+    ).build()
+}
+
+private val PremiumSortIconVector: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "PremiumSortIcon",
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).addPath(
+        pathData = addPathNodes("M 3,6 L 15,6 M 3,12 L 11,12 M 3,18 L 8,18 M 18,17 L 18,7 M 15,10 L 18,7 L 21,10"),
+        stroke = SolidColor(AmberAccent),
+        strokeLineWidth = 2.2f
+    ).build()
+}
+
+@Composable
+fun NotesListScreen(
+    viewModel: MainViewModel,
+    onOpenDrawer: () -> Unit,
+    onOpenEditor: (noteId: Long?) -> Unit
+) {
+    val notes by viewModel.notesList.collectAsState()
+    val noteCount by viewModel.activeNoteCount.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedGroupId by viewModel.selectedGroupId.collectAsState()
+    val allGroups by viewModel.allGroups.collectAsState()
+    val selectedNoteIds by viewModel.selectedNoteIds.collectAsState()
+    val isDarkMode by viewModel.isDarkMode.collectAsState()
+
+    val savedPasswordHash by viewModel.appPasswordHash.collectAsState()
+    val currentViewMode by viewModel.viewModePreference.collectAsState()
+    val authorSignatureName by viewModel.authorSignatureName.collectAsState()
+
+    val context = LocalContext.current
+    var showAssignGroupDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmModal by remember { mutableStateOf(false) }
+    var noteToDelete by remember { mutableStateOf<NoteEntity?>(null) }
+
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = "Smritilipi",
+                subtitle = "নোট ও ডায়েরি",
+                navigationIcon = {
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(
+                            imageVector = SidebarIconVector,
+                            contentDescription = "Open Drawer",
+                            tint = AmberAccent,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                },
+                actions = {
+                    var showSortMenu by remember { mutableStateOf(false) }
+                    val currentSortOrder by viewModel.sortOrderPreference.collectAsState()
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        // Sort Button & Dropdown Menu
+                        Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
+                            IconButton(onClick = { showSortMenu = true }) {
+                                Icon(
+                                    imageVector = PremiumSortIconVector,
+                                    contentDescription = "সর্ট করুন",
+                                    tint = AmberAccent,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = showSortMenu,
+                                onDismissRequest = { showSortMenu = false },
+                                offset = DpOffset(x = 0.dp, y = 6.dp),
+                                properties = PopupProperties(focusable = true),
+                                modifier = Modifier
+                                    .width(220.dp)
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.98f))
+                                    .border(
+                                        width = 1.dp,
+                                        brush = Brush.linearGradient(listOf(GoldLight, GoldPrimary, GoldDark)),
+                                        shape = RoundedCornerShape(18.dp)
+                                    )
+                                    .shadow(16.dp, RoundedCornerShape(18.dp), spotColor = GoldPrimary.copy(alpha = 0.35f)),
+                                shape = RoundedCornerShape(18.dp)
+                            ) {
+                                val options = listOf(
+                                    Triple("NEWEST_FIRST", "নতুন থেকে পুরোনো", Icons.Outlined.Schedule),
+                                    Triple("OLDEST_FIRST", "পুরোনো থেকে নতুন", Icons.Outlined.History),
+                                    Triple("TITLE_ASC", "শিরোনাম অ–য়", Icons.Outlined.SortByAlpha),
+                                    Triple("TITLE_DESC", "শিরোনাম য়–অ", Icons.Outlined.SortByAlpha)
+                                )
+
+                                options.forEach { (key, label, icon) ->
+                                    val isSelected = currentSortOrder == key
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = icon,
+                                                        contentDescription = null,
+                                                        tint = if (isSelected) GoldPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        modifier = Modifier.size(18.dp)
+                                                    )
+                                                    Text(
+                                                        text = label,
+                                                        fontSize = 13.5.sp,
+                                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                        color = if (isSelected) GoldPrimary else MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                }
+                                                if (isSelected) {
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Icon(
+                                                        imageVector = Icons.Default.Check,
+                                                        contentDescription = "Selected",
+                                                        tint = GoldPrimary,
+                                                        modifier = Modifier.size(18.dp)
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onClick = {
+                                            viewModel.setSortOrder(key)
+                                            showSortMenu = false
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(if (isSelected) GoldPrimary.copy(alpha = 0.15f) else Color.Transparent),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Light / Dark Mode Quick Toggle Button
+                        val isDarkModePref by viewModel.isDarkMode.collectAsState()
+                        val isCurrentlyDark = isDarkModePref ?: true
+                        IconButton(onClick = {
+                            viewModel.toggleDarkMode(!isCurrentlyDark)
+                        }) {
+                            Icon(
+                                imageVector = if (isCurrentlyDark) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+                                contentDescription = if (isCurrentlyDark) "হালকা মোড" else "গাঢ় মোড",
+                                tint = AmberAccent,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        // View Mode Toggle Button
+                        val viewIcon = when (currentViewMode) {
+                            "GRID" -> Icons.Outlined.GridView
+                            "LIST" -> Icons.Outlined.ViewList
+                            else -> Icons.Outlined.ViewAgenda
+                        }
+                        val viewDesc = when (currentViewMode) {
+                            "GRID" -> "গ্রিড ভিউ"
+                            "LIST" -> "লিস্ট ভিউ"
+                            else -> "কার্ড ভিউ"
+                        }
+                        IconButton(onClick = {
+                            val nextMode = when (currentViewMode) {
+                                "CARD" -> "GRID"
+                                "GRID" -> "LIST"
+                                "LIST" -> "CARD"
+                                else -> "CARD"
+                            }
+                            viewModel.setViewMode(nextMode)
+                        }) {
+                            Icon(
+                                imageVector = viewIcon,
+                                contentDescription = viewDesc,
+                                tint = AmberAccent,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            // Info Bar (Total Notes Count & Date)
+            InfoBar(leftText = "$noteCount টি নোট")
+
+            // Search Bar with New Note Edit Button (Matching Search Bar background style)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { viewModel.setSearchQuery(it) },
+                    placeholder = {
+                        Text(
+                            text = "নোট খুঁজুন...",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search",
+                            tint = AmberAccent,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.setSearchQuery("") }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = "Clear Search",
+                                    tint = AmberAccent,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(50),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = AmberAccent,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+
+                // New Note Edit Button with identical search-bar background styling
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                        .clickable { onOpenEditor(null) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "New Note",
+                        tint = AmberAccent,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+            }
+
+            // Group Filter Pills
+            if (allGroups.isNotEmpty()) {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        val isAllSelected = selectedGroupId == null
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(if (isAllSelected) GoldPrimary else MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable { viewModel.setSelectedGroupFilter(null) }
+                                .padding(horizontal = 14.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "সবগুলো",
+                                fontSize = 12.sp,
+                                fontWeight = if (isAllSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isAllSelected) Color.White else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
+                    items(allGroups) { group ->
+                        val isGroupSelected = selectedGroupId == group.id
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(if (isGroupSelected) GoldPrimary else MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable { viewModel.setSelectedGroupFilter(group.id) }
+                                .padding(horizontal = 14.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Filled.Folder,
+                                    contentDescription = "Group",
+                                    tint = if (isGroupSelected) Color.White else GoldPrimary,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = group.name,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isGroupSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isGroupSelected) Color.White else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Multi-Select Stylish Action Bar
+            AnimatedVisibility(
+                visible = selectedNoteIds.isNotEmpty(),
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 4.dp)
+                        .shadow(6.dp, RoundedCornerShape(16.dp), spotColor = GoldPrimary.copy(alpha = 0.2f)),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
+                    border = BorderStroke(1.dp, GoldPrimary.copy(alpha = 0.4f))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        // Top info & controls row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Left: "X টি নির্বাচিত" (clean & light)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.CheckCircle,
+                                    contentDescription = null,
+                                    tint = GoldPrimary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = "${selectedNoteIds.size} টি নির্বাচিত",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            // Right: "সব সিলেক্ট" text button + Close icon
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                val isAllSelected = selectedNoteIds.size == notes.size && notes.isNotEmpty()
+                                Surface(
+                                    onClick = {
+                                        if (isAllSelected) {
+                                            viewModel.clearSelection()
+                                        } else {
+                                            viewModel.selectAllNotes(notes.map { it.id })
+                                        }
+                                    },
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color.Transparent
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.SelectAll,
+                                            contentDescription = "Select All",
+                                            tint = GoldPrimary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Text(
+                                            text = if (isAllSelected) "সব বাতিল" else "সব সিলেক্ট",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = GoldPrimary
+                                        )
+                                    }
+                                }
+
+                                IconButton(
+                                    onClick = { viewModel.clearSelection() },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Close,
+                                        contentDescription = "Close Selection Mode",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Action Buttons Row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Share Selected Note(s)
+                            SelectionActionButton(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Outlined.Share,
+                                label = "শেয়ার",
+                                tint = Color(0xFF29B6F6),
+                                onClick = {
+                                    val selectedNotes = notes.filter { selectedNoteIds.contains(it.id) }
+                                    if (selectedNotes.isNotEmpty()) {
+                                        val textToShare = if (selectedNotes.size == 1) {
+                                            val n = selectedNotes.first()
+                                            if (n.title.isNotBlank()) "${n.title}\n\n${n.content}" else n.content
+                                        } else {
+                                            selectedNotes.joinToString("\n\n────────────────\n\n") { n ->
+                                                if (n.title.isNotBlank()) "${n.title}\n\n${n.content}" else n.content
+                                            }
+                                        }
+                                        val signature = PdfExportHelper.formatAuthorSignature(authorSignatureName)
+                                        val finalText = if (signature.isNotBlank()) "$textToShare\n\n$signature" else textToShare
+                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                            type = "text/plain"
+                                            putExtra(
+                                                Intent.EXTRA_SUBJECT,
+                                                if (selectedNotes.size == 1) selectedNotes.first().title.ifBlank { "স্মৃতিলিপি নোট" } else "স্মৃতিলিপি নোট সংকলন (${selectedNotes.size} টি নোট)"
+                                            )
+                                            putExtra(Intent.EXTRA_TEXT, finalText)
+                                        }
+                                        context.startActivity(Intent.createChooser(shareIntent, "নোট শেয়ার করুন"))
+                                    }
+                                }
+                            )
+
+                            // Assign Group
+                            SelectionActionButton(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Outlined.Folder,
+                                label = "গ্রুপ",
+                                tint = GoldPrimary,
+                                onClick = { showAssignGroupDialog = true }
+                            )
+
+                            // Hide Note
+                            SelectionActionButton(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Outlined.VisibilityOff,
+                                label = "হাইড",
+                                tint = AmberAccent,
+                                onClick = {
+                                    val count = selectedNoteIds.size
+                                    viewModel.hideSelectedNotes()
+                                    Toast.makeText(context, "$count টি নোট হাইড করা হয়েছে", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+
+                            // Delete Note
+                            SelectionActionButton(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Outlined.Delete,
+                                label = "মুছুন",
+                                tint = Color(0xFFE53935),
+                                onClick = {
+                                    val selected = notes.filter { selectedNoteIds.contains(it.id) }
+                                    val lockedCount = selected.count { it.isLocked }
+                                    if (lockedCount == selected.size && selected.isNotEmpty()) {
+                                        Toast.makeText(context, "নির্বাচিত সব নোটই লক করা! লক করা নোট মুছে ফেলা যাবে না।", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        if (lockedCount > 0) {
+                                            Toast.makeText(context, "$lockedCount টি লক করা নোট সুরক্ষিত থাকবে", Toast.LENGTH_SHORT).show()
+                                        }
+                                        showDeleteConfirmModal = true
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Empty State illustration or Notes LazyColumn
+            if (notes.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(28.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        // Glowing Feather Emblem Icon Container
+                        Box(
+                            modifier = Modifier
+                                .size(110.dp)
+                                .shadow(12.dp, CircleShape, spotColor = GoldPrimary, ambientColor = GoldGlow)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            GoldLight.copy(alpha = 0.35f),
+                                            GoldPrimary.copy(alpha = 0.15f),
+                                            Color.Transparent
+                                        )
+                                    )
+                                )
+                                .border(1.5.dp, GoldPrimary.copy(alpha = 0.6f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.smritilipi_app_icon_1786961903655),
+                                contentDescription = "Smritilipi Icon",
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .clip(CircleShape)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        val titleText = if (searchQuery.isNotEmpty()) "'$searchQuery' সম্পর্কিত কোনো নোট নেই" else "স্মৃতিলিপির শূন্য ক্যানভাস"
+                        Text(
+                            text = titleText,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Serif,
+                            color = GoldPrimary,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        val subText = if (searchQuery.isNotEmpty()) {
+                            "অন্য কোনো বিষয় বা শিরোনাম দিয়ে আবার সন্ধান করুন।"
+                        } else {
+                            "এখনো কোনো নোট যুক্ত করা হয়নি।\nআপনার অনুভূতি ও ভাবনাগুলো লিখে রাখতে নিচের বাটনে ট্যাপ করুন।"
+                        }
+                        Text(
+                            text = subText,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 22.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Button(
+                            onClick = { onOpenEditor(null) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = GoldPrimary,
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(50),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Edit,
+                                contentDescription = "Write Note",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "নতুন নোট লিখুন",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            } else {
+                AnimatedContent(
+                    targetState = currentViewMode,
+                    transitionSpec = {
+                        (fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
+                                scaleIn(
+                                    initialScale = 0.94f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessLow
+                                    )
+                                )) togetherWith
+                        (fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
+                                scaleOut(
+                                    targetScale = 1.06f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessLow
+                                    )
+                                ))
+                    },
+                    label = "LayoutSwitchTransition",
+                    modifier = Modifier.fillMaxSize()
+                ) { targetMode ->
+                    when (targetMode) {
+                        "GRID" -> {
+                            LazyVerticalStaggeredGrid(
+                                columns = StaggeredGridCells.Fixed(2),
+                                contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 110.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalItemSpacing = 8.dp,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(
+                                    items = notes,
+                                    key = { it.id }
+                                ) { note ->
+                                    val group = allGroups.find { it.id == note.groupId }
+                                    val isSelected = selectedNoteIds.contains(note.id)
+
+                                    NoteGridItem(
+                                        note = note,
+                                        modifier = Modifier.padding(0.dp),
+                                        isSelected = isSelected,
+                                        isInSelectionMode = selectedNoteIds.isNotEmpty(),
+                                        groupName = group?.name,
+                                        onClick = {
+                                            if (selectedNoteIds.isNotEmpty()) {
+                                                viewModel.toggleNoteSelection(note.id)
+                                            } else {
+                                                onOpenEditor(note.id)
+                                            }
+                                        },
+                                        onLongClick = {
+                                            viewModel.toggleNoteSelection(note.id)
+                                        },
+                                        onTogglePin = {
+                                            viewModel.togglePinNote(note)
+                                        },
+                                        onToggleLock = {
+                                            viewModel.toggleLockNote(note)
+                                            val msg = if (note.isLocked) "নোটের লক খোলা হয়েছে" else "নোট লক করা হয়েছে"
+                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                        },
+                                        onDelete = {
+                                            if (note.isLocked) {
+                                                Toast.makeText(context, "লক করা নোট মুছে ফেলা যাবে না। আগে আনলক করুন।", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                noteToDelete = note
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        "LIST" -> {
+                            LazyColumn(
+                                contentPadding = PaddingValues(start = 0.dp, end = 0.dp, top = 4.dp, bottom = 110.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(
+                                    items = notes,
+                                    key = { it.id }
+                                ) { note ->
+                                    val group = allGroups.find { it.id == note.groupId }
+                                    val isSelected = selectedNoteIds.contains(note.id)
+
+                                    NoteListItem(
+                                        note = note,
+                                        isSelected = isSelected,
+                                        isInSelectionMode = selectedNoteIds.isNotEmpty(),
+                                        groupName = group?.name,
+                                        onClick = {
+                                            if (selectedNoteIds.isNotEmpty()) {
+                                                viewModel.toggleNoteSelection(note.id)
+                                            } else {
+                                                onOpenEditor(note.id)
+                                            }
+                                        },
+                                        onLongClick = {
+                                            viewModel.toggleNoteSelection(note.id)
+                                        },
+                                        onTogglePin = {
+                                            viewModel.togglePinNote(note)
+                                        },
+                                        onToggleLock = {
+                                            viewModel.toggleLockNote(note)
+                                            val msg = if (note.isLocked) "নোটের লক খোলা হয়েছে" else "নোট লক করা হয়েছে"
+                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                        },
+                                        onDelete = {
+                                            if (note.isLocked) {
+                                                Toast.makeText(context, "লক করা নোট মুছে ফেলা যাবে না। আগে আনলক করুন।", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                noteToDelete = note
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        else -> { // "CARD" (Default)
+                            LazyColumn(
+                                contentPadding = PaddingValues(start = 0.dp, end = 0.dp, top = 4.dp, bottom = 110.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(
+                                    items = notes,
+                                    key = { it.id }
+                                ) { note ->
+                                    val group = allGroups.find { it.id == note.groupId }
+                                    val isSelected = selectedNoteIds.contains(note.id)
+
+                                    NoteCardItem(
+                                        note = note,
+                                        isSelected = isSelected,
+                                        isInSelectionMode = selectedNoteIds.isNotEmpty(),
+                                        groupName = group?.name,
+                                        onClick = {
+                                            if (selectedNoteIds.isNotEmpty()) {
+                                                viewModel.toggleNoteSelection(note.id)
+                                            } else {
+                                                onOpenEditor(note.id)
+                                            }
+                                        },
+                                        onLongClick = {
+                                            viewModel.toggleNoteSelection(note.id)
+                                        },
+                                        onTogglePin = {
+                                            viewModel.togglePinNote(note)
+                                        },
+                                        onToggleLock = {
+                                            viewModel.toggleLockNote(note)
+                                            val msg = if (note.isLocked) "নোটের লক খোলা হয়েছে" else "নোট লক করা হয়েছে"
+                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                        },
+                                        onDelete = {
+                                            if (note.isLocked) {
+                                                Toast.makeText(context, "লক করা নোট মুছে ফেলা যাবে না। আগে আনলক করুন।", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                noteToDelete = note
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Assign Group Dialog
+    if (showAssignGroupDialog) {
+        AssignGroupDialog(
+            groups = allGroups,
+            currentGroupId = null,
+            onSelectGroup = { groupId ->
+                viewModel.assignSelectedNotesToGroup(groupId)
+                showAssignGroupDialog = false
+            },
+            onDismiss = { showAssignGroupDialog = false }
+        )
+    }
+
+    // Delete Confirmation Modal for Multi-Select
+    if (showDeleteConfirmModal) {
+        DeleteConfirmationDialog(
+            noteCount = selectedNoteIds.size,
+            onConfirm = {
+                viewModel.softDeleteSelectedNotes()
+                showDeleteConfirmModal = false
+            },
+            onDismiss = { showDeleteConfirmModal = false }
+        )
+    }
+
+    // Delete Confirmation Modal for Single Note
+    if (noteToDelete != null) {
+        DeleteConfirmationDialog(
+            noteCount = 1,
+            onConfirm = {
+                viewModel.softDeleteNote(noteToDelete!!.id)
+                noteToDelete = null
+            },
+            onDismiss = { noteToDelete = null }
+        )
+    }
+}
+
+@Composable
+private fun SelectionActionButton(
+    modifier: Modifier = Modifier,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    tint: Color,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = tint.copy(alpha = 0.12f),
+        modifier = modifier.clip(RoundedCornerShape(12.dp))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = tint,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = label,
+                fontSize = 11.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = tint,
+                maxLines = 1
+            )
+        }
+    }
+}
