@@ -139,7 +139,7 @@ fun AboutScreen(
         topBar = {
             AppTopBar(
                 title = "অ্যাপ সম্পর্কে",
-                subtitle = "লেখক ও অ্যাপ পরিচিতি",
+                subtitle = "ডেভেলপার ও অ্যাপ পরিচিতি",
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -166,8 +166,8 @@ fun AboutScreen(
             // ================= 1. DEVELOPER & AUTHOR PROFILE STAMP =================
             ElevatedGlassCard {
                 SectionHeader(
-                    title = "ডেভেলপার ও লেখক পরিচিতি",
-                    subtitle = "Developer & Author Profile",
+                    title = "ডেভেলপার পরিচিতি",
+                    subtitle = "Developer Profile",
                     icon = Icons.Default.Person,
                     iconTint = GoldPrimary
                 )
@@ -449,7 +449,7 @@ fun AboutScreen(
 
                         OutlinedButton(
                             onClick = {
-                                openUrl(context, "https://github.com/hmibrahimsarkar")
+                                openUrl(context, "https://github.com/Tasibtohs/Smritilipi/releases")
                             },
                             shape = RoundedCornerShape(10.dp),
                             border = androidx.compose.foundation.BorderStroke(1.dp, GoldPrimary),
