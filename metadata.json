@@ -1,8 +1,0 @@
-{
-  "name": "Smritilipi",
-  "description": "স্মৃতিলিপি — একটি আধুনিক ও নান্দনিক নোট লেখার প্রিমিয়াম অ্যাপ (V1.0.1)",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}
