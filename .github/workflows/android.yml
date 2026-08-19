@@ -80,84 +80,33 @@ jobs:
       with:
         files: app/build/outputs/apk/release/*.apk
         tag_name: v1.0.${{ github.run_number }}
-        name: "🌟 Smritilipi v1.0.${{ github.run_number }}"
+        name: "Smritilipi v1.0.${{ github.run_number }}"
         body: |
-          <div align="center">
+          # Smritilipi - Bangla Note App
           
-          # 📖 স্মৃতিলিপি — Smritilipi
+          ## Features
+          - 24 Bangla Fonts
+          - PDF Export
+          - Dark/Light Theme
+          - Hidden Notes
+          - Auto Save
+          - Trash Recovery
           
-          ### ✨ স্মৃতি যেখানে শব্দ হয়ে বাঁচে ✨
+          ## Download
+          Download the APK below and install.
           
-          > একটি প্রিমিয়াম বাংলা নোট অ্যাপ
+          ## Update v1.0.1
+          - Font loading fixed
+          - PDF white page fixed
+          - Dark mode stable
           
-          ---
+          ## Privacy
+          - 100% Offline
+          - No data collection
           
-          </div>
-          
-          ## 🌟 বৈশিষ্ট্যসমূহ
-          
-          | 🔥 ফিচার | 📝 বিবরণ |
-          |:---:|:---|
-          | **২৪টি বাংলা ফন্ট** | আপনার পছন্দমতো ফন্টে লিখুন |
-          | **PDF এক্সপোর্ট** | এক ক্লিকে নোট PDF |
-          | **🌙 ডার্ক মোড** | চোখের আরাম |
-          | **🔒 গোপন নোট** | পাসওয়ার্ড সুরক্ষিত |
-          | **💾 অটো সেভ** | লেখা হারানোর ভয় নেই |
-          | **🗑️ ট্র্যাশ রিকভারি** | ভুলে মুছে ফেলা নোট ফিরে পান |
-          
-          ---
-          
-          ## 📥 ডাউনলোড ও ইন্সটল
-          ১. নিচের APK ফাইলটি ডাউনলোড করুন
-          ২. Unknown Sources অনুমতি দিন
-          ৩. ইন্সটল করে লেখা শুরু করুন
-          
-          ---
-          
-          ## 🔄 সর্বশেষ আপডেট — v1.0.1
-          
-          - ✅ ফন্ট লোডিং ফিক্স
-          - ✅ PDF সাদা পেজ ফিক্স
-          - ✅ বাংলা ফন্ট রেন্ডারিং উন্নত
-          - ✅ ডার্ক মোড স্থিতিশীল
-          
-          ---
-          
-          ## 🔒 গোপনীয়তা
-          
-          > 🔐 **১০০% প্রাইভেট**
-          > - সম্পূর্ণ অফলাইন
-          > - কোনো ডেটা সার্ভারে যায় না
-          > - আপনার নোট শুধু আপনার ফোনে
-          
-          ---
-          
-          ## 📱 প্রয়োজনীয়তা
-          
-          | বিষয় | তথ্য |
-          |:---:|:---:|
-          | Android | 7.0+ |
-          | RAM | 2GB+ |
-          | Storage | 50MB |
-          
-          ---
-          
-          ## 🌐 ওপেন সোর্স
-          
-          [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github)](https://github.com/Tasibtohs/Smritilipi)
-          
-          **MIT License** — স্বাধীনভাবে ব্যবহার করুন, পরিবর্তন করুন, শেয়ার করুন।
-          
-          ---
-          
-          <div align="center">
-          
-          ### 💖 ধন্যবাদ Smritilipi ব্যবহার করার জন্য!
-          
-          **👇 নিচের APK ফাইলটি ডাউনলোড করে আজই শুরু করুন!**
-          
-          </div>
-draft: false
-prerelease: false
-env:
-GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ## Open Source
+          https://github.com/Tasibtohs/Smritilipi
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
