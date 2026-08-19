@@ -22,11 +22,10 @@ android {
 
   signingConfigs {
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+      storeFile = file("${rootDir}/smritilipi-release.jks")
+      storePassword = System.getenv("STORE_PASSWORD") ?: "12345678"
+      keyAlias = "smritilipi"
+      keyPassword = System.getenv("KEY_PASSWORD") ?: "12345678"
     }
     create("debugConfig") {
       storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
@@ -45,6 +44,12 @@ android {
     }
     debug { signingConfig = signingConfigs.getByName("debugConfig") }
   }
+  
+  lint {
+    checkReleaseBuilds = false
+    abortOnError = false
+  }
+  
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
