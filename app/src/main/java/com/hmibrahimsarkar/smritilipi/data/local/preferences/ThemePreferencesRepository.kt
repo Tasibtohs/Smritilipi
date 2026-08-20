@@ -51,6 +51,12 @@ class ThemePreferencesRepository(private val context: Context) {
         val IS_DAILY_REMINDER_ENABLED = booleanPreferencesKey("is_daily_reminder_enabled")
         val REMINDER_HOUR = stringPreferencesKey("reminder_hour")
         val REMINDER_MINUTE = stringPreferencesKey("reminder_minute")
+
+        // Onboarding & Contextual Hints
+        val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
+        val HAS_SEEN_EDITOR_HINT = booleanPreferencesKey("has_seen_editor_hint")
+        val HAS_SEEN_HIDDEN_NOTES_HINT = booleanPreferencesKey("has_seen_hidden_notes_hint")
+        val HAS_SEEN_SELECTION_HINT = booleanPreferencesKey("has_seen_selection_hint")
     }
 
     val customThemesPayload: Flow<List<CustomThemePayload>> = context.dataStore.data.map { preferences ->
@@ -291,6 +297,47 @@ class ThemePreferencesRepository(private val context: Context) {
     suspend fun resetAuthorSignatureName() {
         context.dataStore.edit { preferences ->
             preferences.remove(PreferencesKeys.AUTHOR_SIGNATURE_NAME)
+        }
+    }
+
+    // Onboarding & Contextual Hints Flows
+    val hasSeenOnboarding: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.HAS_SEEN_ONBOARDING] ?: false
+    }
+
+    val hasSeenEditorHint: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.HAS_SEEN_EDITOR_HINT] ?: false
+    }
+
+    val hasSeenHiddenNotesHint: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.HAS_SEEN_HIDDEN_NOTES_HINT] ?: false
+    }
+
+    val hasSeenSelectionHint: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.HAS_SEEN_SELECTION_HINT] ?: false
+    }
+
+    suspend fun setHasSeenOnboarding(seen: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAS_SEEN_ONBOARDING] = seen
+        }
+    }
+
+    suspend fun setHasSeenEditorHint(seen: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAS_SEEN_EDITOR_HINT] = seen
+        }
+    }
+
+    suspend fun setHasSeenHiddenNotesHint(seen: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAS_SEEN_HIDDEN_NOTES_HINT] = seen
+        }
+    }
+
+    suspend fun setHasSeenSelectionHint(seen: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAS_SEEN_SELECTION_HINT] = seen
         }
     }
 
