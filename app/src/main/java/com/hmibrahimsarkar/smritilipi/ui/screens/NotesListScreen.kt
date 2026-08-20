@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.automirrored.outlined.Notes
 import androidx.compose.material.icons.filled.Search
@@ -81,6 +82,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -169,6 +171,7 @@ fun NotesListScreen(
     val selectedGroupId by viewModel.selectedGroupId.collectAsState()
     val allGroups by viewModel.allGroups.collectAsState()
     val selectedNoteIds by viewModel.selectedNoteIds.collectAsState()
+    val hasSeenSelectionHint by viewModel.hasSeenSelectionHint.collectAsState()
     val isDarkMode by viewModel.isDarkMode.collectAsState()
 
     val savedPasswordHash by viewModel.appPasswordHash.collectAsState()
@@ -644,6 +647,48 @@ fun NotesListScreen(
                                     }
                                 }
                             )
+                        }
+
+                        // First-time selection mode hint
+                        if (!hasSeenSelectionHint) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = GoldPrimary.copy(alpha = 0.12f),
+                                border = BorderStroke(1.dp, GoldPrimary.copy(alpha = 0.35f)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(
+                                        modifier = Modifier.weight(1f),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Lightbulb,
+                                            contentDescription = null,
+                                            tint = GoldPrimary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Text(
+                                            text = "একাধিক নোট সিলেক্ট করে গ্রুপে দিতে, হাইড করতে বা মুছে ফেলতে পারবেন",
+                                            fontSize = 11.5.sp,
+                                            lineHeight = 15.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                    TextButton(
+                                        onClick = { viewModel.dismissSelectionHint() },
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
+                                    ) {
+                                        Text("বুঝেছি", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = GoldPrimary)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
