@@ -40,6 +40,7 @@ import java.util.Locale
 
 sealed class Screen {
     object Splash : Screen()
+    object Onboarding : Screen()
     object NotesList : Screen()
     data class Editor(val noteId: Long? = null) : Screen()
     object Groups : Screen()
@@ -61,6 +62,48 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // Current Active Screen
     private val _currentScreen = MutableStateFlow<Screen>(Screen.Splash)
     val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
+
+    // Onboarding & Tutorial Flows
+    val hasSeenOnboarding: StateFlow<Boolean> = themePreferences.hasSeenOnboarding
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val hasSeenEditorHint: StateFlow<Boolean> = themePreferences.hasSeenEditorHint
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val hasSeenHiddenNotesHint: StateFlow<Boolean> = themePreferences.hasSeenHiddenNotesHint
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val hasSeenSelectionHint: StateFlow<Boolean> = themePreferences.hasSeenSelectionHint
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    fun completeOnboarding() {
+        viewModelScope.launch {
+            themePreferences.setHasSeenOnboarding(true)
+            _currentScreen.value = Screen.NotesList
+        }
+    }
+
+    fun openOnboardingTutorial() {
+        _currentScreen.value = Screen.Onboarding
+    }
+
+    fun dismissEditorHint() {
+        viewModelScope.launch {
+            themePreferences.setHasSeenEditorHint(true)
+        }
+    }
+
+    fun dismissHiddenNotesHint() {
+        viewModelScope.launch {
+            themePreferences.setHasSeenHiddenNotesHint(true)
+        }
+    }
+
+    fun dismissSelectionHint() {
+        viewModelScope.launch {
+            themePreferences.setHasSeenSelectionHint(true)
+        }
+    }
 
     // Dark Mode preference
     val isDarkMode: StateFlow<Boolean?> = themePreferences.isDarkMode
@@ -540,7 +583,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     nObj.put("id", n.id)
                     nObj.put("title", n.title)
                     nObj.put("content", n.content)
-                    nObj.put("category", n.category)
                     nObj.put("titleColorHex", n.titleColorHex)
                     nObj.put("textColorHex", n.textColorHex)
                     nObj.put("fontFamilyKey", n.fontFamilyKey)
@@ -606,7 +648,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             id = nObj.optLong("id", 0),
                             title = nObj.optString("title", ""),
                             content = nObj.optString("content", ""),
-                            category = nObj.optString("category", ""),
                             titleColorHex = nObj.optString("titleColorHex", "#D4A017"),
                             textColorHex = nObj.optString("textColorHex", "#1A1A2E"),
                             fontFamilyKey = nObj.optString("fontFamilyKey", "hind_siliguri"),
