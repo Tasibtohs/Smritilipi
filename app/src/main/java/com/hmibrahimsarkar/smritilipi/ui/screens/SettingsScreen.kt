@@ -36,6 +36,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Create
@@ -782,7 +783,32 @@ fun SettingsScreen(
                 }
             }
 
-            // ================= 7. DANGER ZONE (CLEAR CACHE) =================
+            // ================= 7. TUTORIAL & GUIDE =================
+            ElevatedGlassCard {
+                SectionHeader(
+                    title = "টিউটোরিয়াল ও নির্দেশিকা",
+                    subtitle = "অ্যাপের প্রাথমিক পরিচিতি ও ব্যবহার সহায়িকা স্লাইডগুলো পুনরায় দেখুন",
+                    icon = Icons.Default.AutoStories,
+                    iconTint = GoldPrimary
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SettingItemRow(
+                    title = "টিউটোরিয়াল আবার দেখুন",
+                    subtitle = "স্মৃতিলিপির সকল ফিচার ও পরিচিতি স্লাইডসমূহ রিভিউ করুন",
+                    icon = Icons.Default.AutoStories,
+                    iconTint = GoldPrimary,
+                    badgeBgTint = GoldPrimary.copy(alpha = 0.15f)
+                ) {
+                    PrimaryActionButton(
+                        text = "দেখুন",
+                        onClick = { viewModel.openOnboardingTutorial() }
+                    )
+                }
+            }
+
+            // ================= 8. DANGER ZONE (CLEAR CACHE) =================
             ElevatedGlassCard(
                 borderColor = MaterialTheme.colorScheme.error.copy(alpha = 0.35f)
             ) {
