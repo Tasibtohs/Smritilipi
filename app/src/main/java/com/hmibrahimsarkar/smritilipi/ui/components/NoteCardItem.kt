@@ -211,59 +211,69 @@ fun NoteCardItem(
                     }
                 }
 
-                // Top Row: Title on the left, Pin/Lock badges on the top right corner
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val titleText = if (note.title.isNotBlank()) note.title else "শিরোনামহীন"
-                    Text(
-                        text = titleText,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontOption.fontFamily,
-                        color = titleColor,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
-                    )
+                // Top Row: Title on the left (if present), Pin/Lock badges on the top right corner
+                val hasBadges = !isInSelectionMode && (note.isLocked || note.isPinned) || isInSelectionMode || isSelected
+                val hasTitle = note.title.isNotBlank()
 
-                    // Top Right Corner Badges (Pin, Lock & Selection Checkmark)
+                if (hasTitle || hasBadges) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = if (hasTitle) Arrangement.SpaceBetween else Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (!isInSelectionMode) {
-                            if (note.isLocked) {
-                                Icon(
-                                    imageVector = Icons.Filled.Lock,
-                                    contentDescription = "Locked",
-                                    tint = Color(0xFFC62828),
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                            if (note.isPinned) {
-                                Icon(
-                                    imageVector = Icons.Filled.PushPin,
-                                    contentDescription = "Pinned",
-                                    tint = AmberAccent,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        }
-                        if (isInSelectionMode || isSelected) {
-                            Icon(
-                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircleOutline,
-                                contentDescription = if (isSelected) "Selected" else "Not Selected",
-                                tint = if (isSelected) GoldPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                modifier = Modifier.size(20.dp)
+                        if (hasTitle) {
+                            Text(
+                                text = note.title,
+                                fontSize = 19.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = fontOption.fontFamily,
+                                color = titleColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
                             )
                         }
+
+                        // Top Right Corner Badges (Pin, Lock & Selection Checkmark)
+                        if (hasBadges) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                if (!isInSelectionMode) {
+                                    if (note.isLocked) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Lock,
+                                            contentDescription = "Locked",
+                                            tint = Color(0xFFC62828),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    if (note.isPinned) {
+                                        Icon(
+                                            imageVector = Icons.Filled.PushPin,
+                                            contentDescription = "Pinned",
+                                            tint = AmberAccent,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                                if (isInSelectionMode || isSelected) {
+                                    Icon(
+                                        imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircleOutline,
+                                        contentDescription = if (isSelected) "Selected" else "Not Selected",
+                                        tint = if (isSelected) GoldPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (note.isLocked || note.content.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(6.dp))
                     }
                 }
-
-                Spacer(modifier = Modifier.height(6.dp))
 
                 // Middle: Note Content Preview (or locked indicator)
                 if (note.isLocked) {
@@ -274,20 +284,21 @@ fun NoteCardItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                } else {
-                    val previewText = if (note.content.isNotBlank()) note.content else "কোনো লেখা নেই..."
+                    Spacer(modifier = Modifier.height(10.dp))
+                } else if (note.content.isNotBlank()) {
                     Text(
-                        text = previewText,
+                        text = note.content,
                         fontSize = 14.sp,
                         fontFamily = fontOption.fontFamily,
                         color = resolveAdaptiveTextColor(note.textColorHex).copy(alpha = 0.85f),
-                        maxLines = 2,
+                        maxLines = if (hasTitle) 2 else 3,
                         overflow = TextOverflow.Ellipsis,
                         lineHeight = 20.sp
                     )
+                    Spacer(modifier = Modifier.height(10.dp))
+                } else if (hasTitle || hasBadges) {
+                    Spacer(modifier = Modifier.height(6.dp))
                 }
-
-                Spacer(modifier = Modifier.height(10.dp))
 
                 // Bottom Row: Clock + Bengali Date/Time on left, Action Pill on right
                 Row(
@@ -459,55 +470,73 @@ fun NoteListItem(
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        val titleText = if (note.title.isNotBlank()) note.title else "শিরোনামহীন"
-                        Text(
-                            text = titleText,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = fontOption.fontFamily,
-                            color = titleColor,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false)
-                        )
+                    val hasBadges = !isInSelectionMode && (note.isLocked || note.isPinned)
+                    val hasTitle = note.title.isNotBlank()
 
-                        if (!isInSelectionMode) {
-                            if (note.isLocked) {
-                                Icon(
-                                    imageVector = Icons.Filled.Lock,
-                                    contentDescription = "Locked",
-                                    tint = Color(0xFFC62828),
-                                    modifier = Modifier.size(14.dp)
+                    if (hasTitle || hasBadges) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            if (hasTitle) {
+                                Text(
+                                    text = note.title,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = fontOption.fontFamily,
+                                    color = titleColor,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false)
                                 )
                             }
-                            if (note.isPinned) {
-                                Icon(
-                                    imageVector = Icons.Filled.PushPin,
-                                    contentDescription = "Pinned",
-                                    tint = AmberAccent,
-                                    modifier = Modifier.size(14.dp)
-                                )
+
+                            if (hasBadges) {
+                                if (note.isLocked) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Lock,
+                                        contentDescription = "Locked",
+                                        tint = Color(0xFFC62828),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                                if (note.isPinned) {
+                                    Icon(
+                                        imageVector = Icons.Filled.PushPin,
+                                        contentDescription = "Pinned",
+                                        tint = AmberAccent,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
                             }
+                        }
+
+                        if (note.isLocked || note.content.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(2.dp))
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    val previewText = if (note.isLocked) "🔒 সুরক্ষিত নোট" else if (note.content.isNotBlank()) note.content else "কোনো লেখা নেই..."
-                    Text(
-                        text = previewText,
-                        fontSize = 12.sp,
-                        fontFamily = fontOption.fontFamily,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
+                    if (note.isLocked) {
+                        Text(
+                            text = "🔒 সুরক্ষিত নোট",
+                            fontSize = 12.sp,
+                            fontFamily = fontOption.fontFamily,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                    } else if (note.content.isNotBlank()) {
+                        Text(
+                            text = note.content,
+                            fontSize = 12.sp,
+                            fontFamily = fontOption.fontFamily,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            maxLines = if (hasTitle) 1 else 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -655,68 +684,89 @@ fun NoteGridItem(
                     Spacer(modifier = Modifier.height(4.dp))
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    val titleText = if (note.title.isNotBlank()) note.title else "শিরোনামহীন"
-                    Text(
-                        text = titleText,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = fontOption.fontFamily,
-                        color = titleColor,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
+                val hasBadges = !isInSelectionMode && (note.isLocked || note.isPinned) || isInSelectionMode || isSelected
+                val hasTitle = note.title.isNotBlank()
 
+                if (hasTitle || hasBadges) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = if (hasTitle) Arrangement.SpaceBetween else Arrangement.End,
+                        verticalAlignment = Alignment.Top
                     ) {
-                        if (!isInSelectionMode) {
-                            if (note.isLocked) {
-                                Icon(
-                                    imageVector = Icons.Filled.Lock,
-                                    contentDescription = "Locked",
-                                    tint = Color(0xFFC62828),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                            if (note.isPinned) {
-                                Icon(
-                                    imageVector = Icons.Filled.PushPin,
-                                    contentDescription = "Pinned",
-                                    tint = AmberAccent,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                        }
-                        if (isInSelectionMode || isSelected) {
-                            Icon(
-                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircleOutline,
-                                contentDescription = null,
-                                tint = if (isSelected) GoldPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                modifier = Modifier.size(18.dp)
+                        if (hasTitle) {
+                            Text(
+                                text = note.title,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = fontOption.fontFamily,
+                                color = titleColor,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
                             )
                         }
+
+                        if (hasBadges) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                if (!isInSelectionMode) {
+                                    if (note.isLocked) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Lock,
+                                            contentDescription = "Locked",
+                                            tint = Color(0xFFC62828),
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                    if (note.isPinned) {
+                                        Icon(
+                                            imageVector = Icons.Filled.PushPin,
+                                            contentDescription = "Pinned",
+                                            tint = AmberAccent,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                }
+                                if (isInSelectionMode || isSelected) {
+                                    Icon(
+                                        imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircleOutline,
+                                        contentDescription = null,
+                                        tint = if (isSelected) GoldPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (note.isLocked || note.content.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(6.dp))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
-
-                val previewText = if (note.isLocked) "🔒 সুরক্ষিত নোট" else if (note.content.isNotBlank()) note.content else "কোনো লেখা নেই..."
-                Text(
-                    text = previewText,
-                    fontSize = 12.sp,
-                    fontFamily = fontOption.fontFamily,
-                    color = resolveAdaptiveTextColor(note.textColorHex).copy(alpha = 0.8f),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    lineHeight = 17.sp
-                )
+                if (note.isLocked) {
+                    Text(
+                        text = "🔒 সুরক্ষিত নোট",
+                        fontSize = 12.sp,
+                        fontFamily = fontOption.fontFamily,
+                        color = resolveAdaptiveTextColor(note.textColorHex).copy(alpha = 0.8f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = 17.sp
+                    )
+                } else if (note.content.isNotBlank()) {
+                    Text(
+                        text = note.content,
+                        fontSize = 12.sp,
+                        fontFamily = fontOption.fontFamily,
+                        color = resolveAdaptiveTextColor(note.textColorHex).copy(alpha = 0.8f),
+                        maxLines = if (hasTitle) 2 else 4,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = 17.sp
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
