@@ -8,6 +8,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -64,6 +67,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -156,6 +160,14 @@ fun EditorScreen(
     val defaultFontSizeKey by mainViewModel.defaultFontSizeKey.collectAsState()
     val defaultFontFamilyKey by mainViewModel.defaultFontFamilyKey.collectAsState()
     val defaultTextAlignKey by mainViewModel.defaultTextAlignKey.collectAsState()
+    val hasSeenEditorHint by mainViewModel.hasSeenEditorHint.collectAsState()
+
+    LaunchedEffect(hasSeenEditorHint) {
+        if (!hasSeenEditorHint) {
+            kotlinx.coroutines.delay(4000)
+            mainViewModel.dismissEditorHint()
+        }
+    }
 
     val defaultFontSizeSp = when (defaultFontSizeKey) {
         "small" -> 14f
@@ -332,12 +344,22 @@ fun EditorScreen(
                                     isOverflowMenuExpanded = false
                                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                         type = "text/plain"
-                                        putExtra(Intent.EXTRA_SUBJECT, noteState.title)
+                                        if (noteState.title.isNotBlank()) {
+                                            putExtra(Intent.EXTRA_SUBJECT, noteState.title)
+                                        }
                                         val signatureText = PdfExportHelper.formatAuthorSignature(authorSignatureName)
-                                        val textToShare = if (signatureText.isNotBlank()) {
-                                            "${noteState.title}\n\n${noteState.content}\n\n$signatureText"
+                                        val textToShare = if (noteState.title.isNotBlank()) {
+                                            if (signatureText.isNotBlank()) {
+                                                "${noteState.title}\n\n${noteState.content}\n\n$signatureText"
+                                            } else {
+                                                "${noteState.title}\n\n${noteState.content}"
+                                            }
                                         } else {
-                                            "${noteState.title}\n\n${noteState.content}"
+                                            if (signatureText.isNotBlank()) {
+                                                "${noteState.content}\n\n$signatureText"
+                                            } else {
+                                                noteState.content
+                                            }
                                         }
                                         putExtra(Intent.EXTRA_TEXT, textToShare)
                                     }
@@ -359,7 +381,12 @@ fun EditorScreen(
                                 },
                                 onClick = {
                                     isOverflowMenuExpanded = false
-                                    clipboardManager.setText(AnnotatedString("${noteState.title}\n\n${noteState.content}"))
+                                    val textToCopy = if (noteState.title.isNotBlank()) {
+                                        "${noteState.title}\n\n${noteState.content}"
+                                    } else {
+                                        noteState.content
+                                    }
+                                    clipboardManager.setText(AnnotatedString(textToCopy))
                                 }
                             )
 
@@ -377,9 +404,15 @@ fun EditorScreen(
                                 },
                                 onClick = {
                                     isOverflowMenuExpanded = false
-                                    val noteTitle = if (noteState.title.isNotBlank()) noteState.title else "শিরোনামহীন_নোট"
-                                    val sanitizedTitle = noteTitle.take(30).replace(Regex("[\\\\/:*?\"<>|]"), "_")
-                                    val defaultFileName = "${sanitizedTitle}.pdf"
+                                    val rawName = if (noteState.title.isNotBlank()) {
+                                        noteState.title.take(30)
+                                    } else if (noteState.content.isNotBlank()) {
+                                        noteState.content.take(20).replace("\n", " ")
+                                    } else {
+                                        "Smritilipi_Note"
+                                    }
+                                    val sanitizedTitle = rawName.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
+                                    val defaultFileName = "${if (sanitizedTitle.isNotBlank()) sanitizedTitle else "Smritilipi_Note"}.pdf"
                                     exportPdfLauncher.launch(defaultFileName)
                                 }
                             )
@@ -444,22 +477,70 @@ fun EditorScreen(
         floatingActionButton = {},
         bottomBar = {
             if (!isReadingMode && !noteState.isLocked) {
-                // Pill Shape Bottom Formatting Bar
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .border(1.dp, AmberAccent.copy(alpha = 0.4f), RoundedCornerShape(50))
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    // First-Time Contextual Tooltip Bubble
+                    AnimatedVisibility(
+                        visible = !hasSeenEditorHint,
+                        enter = fadeIn() + slideInVertically { it / 2 },
+                        exit = fadeOut() + slideOutVertically { it / 2 }
                     ) {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, GoldPrimary.copy(alpha = 0.6f)),
+                            shadowElevation = 6.dp,
+                            modifier = Modifier
+                                .padding(bottom = 6.dp)
+                                .clickable { mainViewModel.dismissEditorHint() }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lightbulb,
+                                    contentDescription = null,
+                                    tint = GoldPrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "এখানে ফন্ট, রঙ ও স্টাইল পরিবর্তন করতে পারবেন",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Dismiss",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .clickable { mainViewModel.dismissEditorHint() }
+                                )
+                            }
+                        }
+                    }
+
+                    // Pill Shape Bottom Formatting Bar
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .border(1.dp, AmberAccent.copy(alpha = 0.4f), RoundedCornerShape(50))
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                         // Aa (Formatting)
                         IconButton(
                             onClick = { showFormattingSheet = true },
@@ -539,7 +620,8 @@ fun EditorScreen(
                 }
             }
         }
-    ) { paddingValues ->
+    }
+) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -585,37 +667,41 @@ fun EditorScreen(
                 val effectiveLineHeightSp = (effectiveFontSizeSp * effectiveLineMultiplier).sp
 
                 // Title Field: plain text field, medium-large font size, light gray placeholder "শিরোনাম...", no border/underline
-                BasicTextField(
-                    value = noteState.title,
-                    onValueChange = { editorViewModel.updateTitle(it) },
-                    readOnly = isReadingMode || noteState.isLocked,
-                    textStyle = TextStyle(
-                        fontSize = titleFontSize,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = selectedFontOption.fontFamily,
-                        color = titleColor,
-                        textAlign = alignValue
-                    ),
-                    cursorBrush = SolidColor(AmberAccent),
-                    modifier = Modifier.fillMaxWidth(),
-                    decorationBox = { innerTextField ->
-                        if (noteState.title.isEmpty()) {
-                            Text(
-                                text = "শিরোনাম...",
-                                fontSize = titleFontSize,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = selectedFontOption.fontFamily,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f),
-                                textAlign = alignValue
-                            )
+                if (!isReadingMode || noteState.title.isNotBlank()) {
+                    BasicTextField(
+                        value = noteState.title,
+                        onValueChange = { editorViewModel.updateTitle(it) },
+                        readOnly = isReadingMode || noteState.isLocked,
+                        textStyle = TextStyle(
+                            fontSize = titleFontSize,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = selectedFontOption.fontFamily,
+                            color = titleColor,
+                            textAlign = alignValue
+                        ),
+                        cursorBrush = SolidColor(AmberAccent),
+                        modifier = Modifier.fillMaxWidth(),
+                        decorationBox = { innerTextField ->
+                            if (noteState.title.isEmpty() && !isReadingMode) {
+                                Text(
+                                    text = "শিরোনাম...",
+                                    fontSize = titleFontSize,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = selectedFontOption.fontFamily,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f),
+                                    textAlign = alignValue
+                                )
+                            }
+                            innerTextField()
                         }
-                        innerTextField()
+                    )
+
+                    if (!isReadingMode || noteState.content.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(14.dp))
                     }
-                )
+                }
 
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Content Field: directly below title, placeholder "আপনার নোট লিখুন...", small light gray text, multiline
+                // Content Field: directly below title, placeholder "নোট লিখুন...", small light gray text, multiline
                 BasicTextField(
                     value = noteState.content,
                     onValueChange = { editorViewModel.updateContent(it) },
@@ -635,7 +721,7 @@ fun EditorScreen(
                         .fillMaxWidth()
                         .heightIn(min = 250.dp),
                     decorationBox = { innerTextField ->
-                        if (noteState.content.isEmpty()) {
+                        if (noteState.content.isEmpty() && !isReadingMode) {
                             Text(
                                 text = "নোট লিখুন...",
                                 fontSize = 15.sp,
