@@ -135,44 +135,44 @@ fun SplashScreen(
     )
 
     LaunchedEffect(Unit) {
-        // Step 1: 3D Flip & Bouncy Scale Logo Reveal
+        // Step 1: 3D Flip & Bouncy Scale Logo Reveal (Fast & Crisp)
         launch {
             logoScale.animateTo(
                 targetValue = 1f,
                 animationSpec = spring(
-                    dampingRatio = 0.6f,
-                    stiffness = 320f
+                    dampingRatio = 0.7f,
+                    stiffness = 450f
                 )
             )
         }
         launch {
-            logoAlpha.animateTo(1f, animationSpec = tween(400))
+            logoAlpha.animateTo(1f, animationSpec = tween(280))
         }
         launch {
-            logoRotationY.animateTo(0f, animationSpec = tween(600, easing = FastOutSlowInEasing))
+            logoRotationY.animateTo(0f, animationSpec = tween(400, easing = FastOutSlowInEasing))
         }
 
-        delay(250)
+        delay(150)
         // Step 2: Title float up & fade
         launch {
-            titleOffsetY.animateTo(0f, animationSpec = tween(500, easing = FastOutSlowInEasing))
+            titleOffsetY.animateTo(0f, animationSpec = tween(350, easing = FastOutSlowInEasing))
         }
         launch {
-            titleAlpha.animateTo(1f, animationSpec = tween(500))
+            titleAlpha.animateTo(1f, animationSpec = tween(350))
         }
 
-        delay(200)
+        delay(120)
         // Step 3: Subtitle poetry tag line
         launch {
-            subtitleAlpha.animateTo(1f, animationSpec = tween(400))
+            subtitleAlpha.animateTo(1f, animationSpec = tween(280))
         }
 
         // Step 4: Smooth progress fill
         launch {
-            progressVal.animateTo(1f, animationSpec = tween(900, easing = FastOutSlowInEasing))
+            progressVal.animateTo(1f, animationSpec = tween(550, easing = FastOutSlowInEasing))
         }
 
-        delay(1000)
+        delay(600)
         onSplashFinished()
     }
 
