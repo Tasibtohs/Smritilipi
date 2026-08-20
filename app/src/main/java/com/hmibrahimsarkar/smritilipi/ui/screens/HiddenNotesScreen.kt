@@ -1,22 +1,33 @@
 package com.hmibrahimsarkar.smritilipi.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
@@ -26,7 +37,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -163,47 +176,102 @@ fun HiddenNotesScreen(
                 )
             } else {
                 // Unlocked view
-                if (hiddenNotes.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                val hasSeenHiddenNotesHint by viewModel.hasSeenHiddenNotesHint.collectAsState()
+
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Contextual info card for hidden notes
+                    AnimatedVisibility(
+                        visible = !hasSeenHiddenNotesHint,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "কোনো হাইডেন নোট নেই",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = GoldPrimary
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = "নোট গোপন করতে নিচে '+' বাটনে চাপ দিন",
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = BorderStroke(1.dp, GoldPrimary.copy(alpha = 0.4f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = null,
+                                        tint = GoldPrimary,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                    Text(
+                                        text = "এখানে যা রাখবেন তা পাসওয়ার্ড ছাড়া কেউ দেখতে পারবে না।",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                                TextButton(
+                                    onClick = { viewModel.dismissHiddenNotesHint() }
+                                ) {
+                                    Text(
+                                        text = "বুঝেছি",
+                                        fontWeight = FontWeight.Bold,
+                                        color = GoldPrimary,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
                         }
                     }
-                } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 110.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(hiddenNotes, key = { it.id }) { note ->
-                            NoteCardItem(
-                                note = note,
-                                onClick = { onOpenEditor(note.id) },
-                                onLongClick = { viewModel.toggleHideNote(note) },
-                                onTogglePin = { viewModel.togglePinNote(note) },
-                                onToggleLock = { viewModel.toggleLockNote(note) },
-                                onDelete = {
-                                    if (note.isLocked) {
-                                        Toast.makeText(context, "লক করা নোট মুছে ফেলা যাবে না। প্রথমে আনলক করুন।", Toast.LENGTH_SHORT).show()
-                                    } else {
-                                        viewModel.softDeleteNote(note.id)
-                                    }
-                                },
-                                onUnhide = { viewModel.toggleHideNote(note) }
-                            )
+
+                    if (hiddenNotes.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "কোনো হাইডেন নোট নেই",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = GoldPrimary
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "নোট গোপন করতে নিচে '+' বাটনে চাপ দিন",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 110.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(hiddenNotes, key = { it.id }) { note ->
+                                NoteCardItem(
+                                    note = note,
+                                    onClick = { onOpenEditor(note.id) },
+                                    onLongClick = { viewModel.toggleHideNote(note) },
+                                    onTogglePin = { viewModel.togglePinNote(note) },
+                                    onToggleLock = { viewModel.toggleLockNote(note) },
+                                    onDelete = {
+                                        if (note.isLocked) {
+                                            Toast.makeText(context, "লক করা নোট মুছে ফেলা যাবে না। প্রথমে আনলক করুন।", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            viewModel.softDeleteNote(note.id)
+                                        }
+                                    },
+                                    onUnhide = { viewModel.toggleHideNote(note) }
+                                )
+                            }
                         }
                     }
                 }
