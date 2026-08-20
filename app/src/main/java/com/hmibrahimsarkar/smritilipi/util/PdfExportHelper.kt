@@ -466,7 +466,13 @@ object PdfExportHelper {
                 fun renderTocItems(subList: List<NoteEntity>, offset: Int): String {
                     return subList.mapIndexed { idx, note ->
                         val globalIndex = offset + idx + 1
-                        val title = if (note.title.isNotBlank()) note.title else "শিরোনামহীন নোট"
+                        val title = if (note.title.isNotBlank()) {
+                            note.title
+                        } else if (note.content.isNotBlank()) {
+                            note.content.take(25).replace("\n", " ").trim()
+                        } else {
+                            "নোট"
+                        }
                         val pageNum = notePageMap[note.id] ?: globalIndex
                         val bnPageNum = toBengaliNumerals(pageNum)
                         """
@@ -552,7 +558,7 @@ object PdfExportHelper {
         }
 
         fun renderFullWidthHeader(note: NoteEntity): String {
-            val title = if (note.title.isNotBlank()) note.title else "শিরোনামহীন নোট"
+            val hasTitle = note.title.isNotBlank()
             val noteDate = SimpleDateFormat("dd MMMM, yyyy • hh:mm a", Locale("bn", "BD")).format(Date(note.createdAt))
             val updatedDate = SimpleDateFormat("dd MMMM, yyyy • hh:mm a", Locale("bn", "BD")).format(Date(note.updatedAt))
 
@@ -560,14 +566,20 @@ object PdfExportHelper {
             val fontCssFamily = "'${fontOption.key}', 'Tiro Bangla', serif, sans-serif"
             val readableTitleColor = ensureReadableTextColor(note.titleColorHex, defaultColorHex = "#B8860B")
 
-            return """
-            <div class="fullwidth-poem-header">
-                <h2 class="fullwidth-poem-title" style="color: $readableTitleColor; font-family: $fontCssFamily;">${escapeHtml(title)}</h2>
+            val titleHtml = if (hasTitle) {
+                """
+                <h2 class="fullwidth-poem-title" style="color: $readableTitleColor; font-family: $fontCssFamily;">${escapeHtml(note.title)}</h2>
                 <div class="poem-divider">
                     <span class="poem-divider-line"></span>
                     <span class="poem-symbol">❦</span>
                     <span class="poem-divider-line"></span>
                 </div>
+                """.trimIndent()
+            } else ""
+
+            return """
+            <div class="fullwidth-poem-header">
+                $titleHtml
                 <div class="poem-meta">
                     <span>রচনাকাল: $noteDate</span>
                     ${if (note.updatedAt > note.createdAt + 60000) " • <span>সম্পাদিত: $updatedDate</span>" else ""}
@@ -577,8 +589,8 @@ object PdfExportHelper {
         }
 
         fun renderSinglePoemCardContent(note: NoteEntity, leafPageNum: Int): String {
-            val title = if (note.title.isNotBlank()) note.title else "শিরোনামহীন নোট"
-            val content = if (note.content.isNotBlank()) note.content else "(ফাঁকা নোট)"
+            val hasTitle = note.title.isNotBlank()
+            val content = note.content
 
             val noteDate = SimpleDateFormat("dd MMMM, yyyy • hh:mm a", Locale("bn", "BD")).format(Date(note.createdAt))
             val updatedDate = SimpleDateFormat("dd MMMM, yyyy • hh:mm a", Locale("bn", "BD")).format(Date(note.updatedAt))
@@ -599,20 +611,25 @@ object PdfExportHelper {
 
             val (fontSizePx, lineHeightRatio) = calculateColumnTypography(content, note.fontSizeSp, note.lineSpacingMultiplier)
 
-            val safeTitle = escapeHtml(title)
             val safeContent = escapeHtml(content)
             val leafPageNumBn = toBengaliNumerals(leafPageNum)
             val authorHtml = renderAuthorSignature(fontCssFamily)
 
+            val titleHtml = if (hasTitle) {
+                """
+                <h3 class="leaf-poem-title" style="color: $readableTitleColor; font-family: $fontCssFamily;">${escapeHtml(note.title)}</h3>
+                <div class="leaf-divider">
+                    <span class="leaf-divider-line"></span>
+                    <span class="leaf-symbol">❦</span>
+                    <span class="leaf-divider-line"></span>
+                </div>
+                """.trimIndent()
+            } else ""
+
             return """
             <div class="column-leaf-card">
                 <div class="leaf-header">
-                    <h3 class="leaf-poem-title" style="color: $readableTitleColor; font-family: $fontCssFamily;">$safeTitle</h3>
-                    <div class="leaf-divider">
-                        <span class="leaf-divider-line"></span>
-                        <span class="leaf-symbol">❦</span>
-                        <span class="leaf-divider-line"></span>
-                    </div>
+                    $titleHtml
                     <div class="leaf-meta">
                         <span>রচনাকাল: $noteDate</span>
                         ${if (note.updatedAt > note.createdAt + 60000) " • <span>সম্পাদিত: $updatedDate</span>" else ""}
@@ -692,7 +709,7 @@ object PdfExportHelper {
 
                 is PdfPageItem.SpanningPoemSpread -> {
                     val note = pageItem.note
-                    val title = if (note.title.isNotBlank()) note.title else "শিরোনামহীন নোট"
+                    val hasTitle = note.title.isNotBlank()
                     val noteDate = SimpleDateFormat("dd MMMM, yyyy • hh:mm a", Locale("bn", "BD")).format(Date(note.createdAt))
                     val updatedDate = SimpleDateFormat("dd MMMM, yyyy • hh:mm a", Locale("bn", "BD")).format(Date(note.updatedAt))
 
@@ -712,13 +729,23 @@ object PdfExportHelper {
 
                     val (fontSizePx, lineHeightRatio) = calculateSpanningTypography(note.content, note.fontSizeSp, note.lineSpacingMultiplier)
 
-                    val safeTitle = escapeHtml(title)
                     val safeContent = escapeHtml(note.content)
 
                     val leftPageBn = toBengaliNumerals(pageItem.leftPageNum)
                     val rightPageBn = toBengaliNumerals(pageItem.rightPageNum)
 
                     val authorHtml = renderAuthorSignature(fontCssFamily)
+
+                    val titleHtml = if (hasTitle) {
+                        """
+                        <h3 class="flow-poem-title" style="color: $readableTitleColor; font-family: $fontCssFamily;">${escapeHtml(note.title)}</h3>
+                        <div class="leaf-divider">
+                            <span class="leaf-divider-line"></span>
+                            <span class="leaf-symbol">❦</span>
+                            <span class="leaf-divider-line"></span>
+                        </div>
+                        """.trimIndent()
+                    } else ""
 
                     """
                     <div class="landscape-page spanning-page $pageBreakClass">
@@ -742,12 +769,7 @@ object PdfExportHelper {
                                     <div class="spanning-card">
                                         <div class="multi-column-flow-container">
                                             <div class="flow-header">
-                                                <h3 class="flow-poem-title" style="color: $readableTitleColor; font-family: $fontCssFamily;">$safeTitle</h3>
-                                                <div class="leaf-divider">
-                                                    <span class="leaf-divider-line"></span>
-                                                    <span class="leaf-symbol">❦</span>
-                                                    <span class="leaf-divider-line"></span>
-                                                </div>
+                                                $titleHtml
                                                 <div class="leaf-meta">
                                                     <span>রচনাকাল: $noteDate</span>
                                                     ${if (note.updatedAt > note.createdAt + 60000) " • <span>সম্পাদিত: $updatedDate</span>" else ""}
@@ -786,7 +808,7 @@ object PdfExportHelper {
 
                 is PdfPageItem.SingleNoteStandalone -> {
                     val note = pageItem.note
-                    val title = if (note.title.isNotBlank()) note.title else "শিরোনামহীন নোট"
+                    val hasTitle = note.title.isNotBlank()
                     val noteDate = SimpleDateFormat("dd MMMM, yyyy • hh:mm a", Locale("bn", "BD")).format(Date(note.createdAt))
                     val updatedDate = SimpleDateFormat("dd MMMM, yyyy • hh:mm a", Locale("bn", "BD")).format(Date(note.updatedAt))
 
@@ -806,9 +828,19 @@ object PdfExportHelper {
 
                     val (fontSizePx, lineHeightRatio) = calculateSingleNoteTypography(note.content, note.fontSizeSp, note.lineSpacingMultiplier)
 
-                    val safeTitle = escapeHtml(title)
                     val safeContent = escapeHtml(note.content)
                     val authorHtml = renderAuthorSignature(fontCssFamily)
+
+                    val titleHtml = if (hasTitle) {
+                        """
+                        <h2 class="flow-poem-title" style="color: $readableTitleColor; font-family: $fontCssFamily; font-size: 22px;">${escapeHtml(note.title)}</h2>
+                        <div class="leaf-divider">
+                            <span class="leaf-divider-line"></span>
+                            <span class="leaf-symbol">❦</span>
+                            <span class="leaf-divider-line"></span>
+                        </div>
+                        """.trimIndent()
+                    } else ""
 
                     """
                     <div class="landscape-page single-note-page $pageBreakClass">
@@ -832,12 +864,7 @@ object PdfExportHelper {
                                     <div class="single-note-unified-frame">
                                         <div class="multi-column-flow-container">
                                             <div class="flow-header">
-                                                <h2 class="flow-poem-title" style="color: $readableTitleColor; font-family: $fontCssFamily; font-size: 22px;">$safeTitle</h2>
-                                                <div class="leaf-divider">
-                                                    <span class="leaf-divider-line"></span>
-                                                    <span class="leaf-symbol">❦</span>
-                                                    <span class="leaf-divider-line"></span>
-                                                </div>
+                                                $titleHtml
                                                 <div class="leaf-meta">
                                                     <span>রচনাকাল: $noteDate</span>
                                                     ${if (note.updatedAt > note.createdAt + 60000) " • <span>সম্পাদিত: $updatedDate</span>" else ""}
