@@ -32,6 +32,7 @@ import com.hmibrahimsarkar.smritilipi.ui.screens.EditorScreen
 import com.hmibrahimsarkar.smritilipi.ui.screens.GroupsScreen
 import com.hmibrahimsarkar.smritilipi.ui.screens.HiddenNotesScreen
 import com.hmibrahimsarkar.smritilipi.ui.screens.NotesListScreen
+import com.hmibrahimsarkar.smritilipi.ui.screens.OnboardingScreen
 import com.hmibrahimsarkar.smritilipi.ui.screens.PrivacyPolicyScreen
 import com.hmibrahimsarkar.smritilipi.ui.screens.SettingsScreen
 import com.hmibrahimsarkar.smritilipi.ui.screens.SplashScreen
@@ -109,7 +110,7 @@ fun MainAppContent(
     }
 
     // Back button handling
-    BackHandler(enabled = currentScreen !is Screen.NotesList && currentScreen !is Screen.Splash) {
+    BackHandler(enabled = currentScreen !is Screen.NotesList && currentScreen !is Screen.Splash && currentScreen !is Screen.Onboarding) {
         if (drawerState.isOpen) {
             scope.launch { drawerState.close() }
         } else {
@@ -119,7 +120,7 @@ fun MainAppContent(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = currentScreen !is Screen.Editor && currentScreen !is Screen.Splash,
+        gesturesEnabled = currentScreen !is Screen.Editor && currentScreen !is Screen.Splash && currentScreen !is Screen.Onboarding,
         drawerContent = {
             NavigationDrawerContent(
                 currentScreen = currentScreen,
@@ -150,7 +151,19 @@ fun MainAppContent(
                 is Screen.Splash -> {
                     SplashScreen(
                         onSplashFinished = {
-                            viewModel.navigateTo(Screen.NotesList)
+                            if (!viewModel.hasSeenOnboarding.value) {
+                                viewModel.navigateTo(Screen.Onboarding)
+                            } else {
+                                viewModel.navigateTo(Screen.NotesList)
+                            }
+                        }
+                    )
+                }
+
+                is Screen.Onboarding -> {
+                    OnboardingScreen(
+                        onFinish = {
+                            viewModel.completeOnboarding()
                         }
                     )
                 }
