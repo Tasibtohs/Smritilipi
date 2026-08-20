@@ -147,19 +147,24 @@ fun TrashScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    val titleText = if (note.title.isNotBlank()) note.title else "শিরোনামহীন নোট"
-                                    Text(
-                                        text = titleText,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = note.content.take(60),
-                                        fontSize = 13.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                    if (note.title.isNotBlank()) {
+                                        Text(
+                                            text = note.title,
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        if (note.content.isNotBlank()) {
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                        }
+                                    }
+                                    if (note.content.isNotBlank()) {
+                                        Text(
+                                            text = note.content.take(60),
+                                            fontSize = 13.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
 
                                 Row {
